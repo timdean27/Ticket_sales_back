@@ -2,6 +2,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 import uuid
 
+
 class Concert(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField()
@@ -11,47 +12,41 @@ class Concert(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Generate 100 tickets for the concert
-        for seat_number in range(1, 101):
-            # Determine ticket price based on seat number
-            price = 60.00 if seat_number <= 50 else 40.00
-            Ticket.objects.create(concert=self, seat_number=seat_number, price=price)
+        if not self.tickets.exists():
+            Ticket.objects.bulk_create([
+                Ticket(concert=self, seat_number=i)
+                for i in range(1, 401)
+            ])
 
 class Ticket(models.Model):
     concert = models.ForeignKey(Concert, related_name='tickets', on_delete=models.CASCADE)
-    ticket_id = models.CharField(max_length=32, unique=True, default=uuid.uuid4)
+    ticket_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     is_sold = models.BooleanField(default=False)
-    seat_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
-    price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    seat_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(400)])
+    price = models.DecimalField(max_digits=5, decimal_places=2, default=40)  # Set default value to 40
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    PREMIUM = 'premium'
+    STANDARD = 'standard'
+    STUDENT = 'student'
+    PRICE_CHOICES = [
+        (PREMIUM, 'Premium'),
+        (STANDARD, 'Standard'),
+        (STUDENT, 'Student'),
+    ]
+    price_type = models.CharField(default='standard', max_length=20, choices=PRICE_CHOICES)
 
     def __str__(self):
         return f"Ticket {self.ticket_id} for {self.concert.name} (Seat {self.seat_number})"
 
 class Purchase(models.Model):
-    concert = models.ForeignKey(Concert, related_name='purchases', on_delete=models.CASCADE)
+    purchase_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    concert = models.CharField(max_length=100)  
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15)
     date_of_purchase = models.DateField()
-    number_of_tickets = models.PositiveIntegerField()
-    tickets = models.ManyToManyField(Ticket)
-    seat_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)])
-    student_discount = models.BooleanField(default=False)
-
-    def calculate_ticket_price(self):
-        if self.student_discount and self.seat_number > 50:
-            return 25.00
-        elif self.seat_number <= 50:
-            return 65.00
-        else:
-            return 40.00
-
-    def calculate_total_price(self):
-        ticket_price = self.calculate_ticket_price()
-        return self.number_of_tickets * ticket_price
+    tickets = models.JSONField(default=dict)  # Set default to an empty dictionary
+    total_price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
     def __str__(self):
-        return f"Purchase by {self.name} for {self.number_of_tickets} ticket(s) for {self.concert.name} (Seat {self.seat_number})"
+        return f"Purchase ID: {self.purchase_id}"

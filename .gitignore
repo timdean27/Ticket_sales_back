@@ -1,0 +1,10 @@
+# Ignore .env file
+.env
+
+# Ignore docker-compose.yml file
+docker-compose.yml
+
+# Ignore Dockerfile
+Dockerfile
+
+requirements.txt
