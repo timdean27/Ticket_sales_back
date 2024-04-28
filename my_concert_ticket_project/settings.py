@@ -83,9 +83,9 @@ WSGI_APPLICATION = 'my_concert_ticket_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'churchconcerttickets'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'Fishboy@27!'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', 'localhost'),  # Use 'localhost' for TCP/IP connection
         'PORT': os.getenv('DB_PORT', '3306'),
     }
