@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['52.91.102.153']
 
 
 # Application definition
@@ -86,7 +86,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),  # Use 'localhost' for TCP/IP connection
+        'HOST': os.getenv('DB_HOST'),  # Use 'localhost' for TCP/IP connection
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
